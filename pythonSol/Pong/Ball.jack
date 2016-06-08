@@ -186,52 +186,52 @@ class Ball {
      * Bounces from the current wall: sets the new destination
      * of the ball according to the ball's angle and the given
      * bouncing direction (-1/0/1=left/center/right or up/center/down).
-     */
+     */gi
     method void bounce(int bouncingDirection) {
-	var int newx, newy, divLengthx, divLengthy, factor;
+        var int newx, newy, divLengthx, divLengthy, factor;
 
-	// dividing by 10 first since results are too big
-        let divLengthx = lengthx / 10;
-        let divLengthy = lengthy / 10;
-	if (bouncingDirection = 0) {
-	    let factor = 10;
-	}
-	else {
-	    if ((~(lengthx < 0)) & (bouncingDirection = 1) | (lengthx < 0) & (bouncingDirection = (-1))) {
-	        let factor = 20; // bounce direction is in ball direction
-   	    }
-	    else {
-	        let factor = 5; // bounce direction is against ball direction
-	    }
-	}
+        // dividing by 10 first since results are too big
+            let divLengthx = lengthx / 10;
+            let divLengthy = lengthy / 10;
+        if (bouncingDirection = 0) {
+            let factor = 10;
+        }
+        else {
+            if ( ( (~(lengthx < 0)) & (bouncingDirection = 1) ) |  (lengthx < 0) & (bouncingDirection = (-1)) ) ) {
+                let factor = 20; // bounce direction is in ball direction
+            }
+            else {
+                let factor = 5; // bounce direction is against ball direction
+            }
+        }
 
-	if (wall = 1) {
-	    let newx = 506;
-	    let newy = (divLengthy * (-50)) / divLengthx;
-            let newy = y + (newy * factor);
-	}
-	else {
- 	    if (wall = 2) {
-	        let newx = 0;
-	        let newy = (divLengthy * 50) / divLengthx;
+        if (wall = 1) {
+            let newx = 506;
+            let newy = (divLengthy * (-50)) / divLengthx;
                 let newy = y + (newy * factor);
-	    }
-	    else {
- 	        if (wall = 3) {
-		    let newy = 250;
-		    let newx = (divLengthx * (-25)) / divLengthy;
-	            let newx = x + (newx * factor);
-		}
-	        else { // assumes wall = 4
-		    let newy = 0;
-		    let newx = (divLengthx * 25) / divLengthy;
-	            let newx = x + (newx * factor);
-		}
-	    }
-	}
+        }
+        else {
+            if (wall = 2) {
+                let newx = 0;
+                let newy = (divLengthy * 50) / divLengthx;
+                    let newy = y + (newy * factor);
+            }
+            else {
+                if (wall = 3) {
+                let newy = 250;
+                let newx = (divLengthx * (-25)) / divLengthy;
+                    let newx = x + (newx * factor);
+            }
+                else { // assumes wall = 4
+                let newy = 0;
+                let newx = (divLengthx * 25) / divLengthy;
+                    let newx = x + (newx * factor);
+            }
+            }
+        }
 
-	do setDestination(newx, newy);
+        do setDestination(newx, newy);
 
-	return;
+        return;
     }
 }
