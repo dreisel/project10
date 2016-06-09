@@ -2,7 +2,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by daniel on 01/06/16.
+ * Created by daniel & ari on 26/05/16.
+ *             304953243 201524089
  */
 public class SymbolTable {
 

@@ -21,7 +21,8 @@ public class CompilationEngine {
     private Map<SymbolTable.Kind,VMWriter.KeyWord> kindToSegment;
     private String currentClass = "";
     private String currentSubroutine = "";
-    private int labelCounter = 1;
+    private int ifCounter = 0;
+    private int whileCounter = 0;
 
     public CompilationEngine(File classFile, File outFile){
         try {
@@ -91,6 +92,8 @@ public class CompilationEngine {
 
     //('constructor'|'function'|'method') ('void' | type) subroutineName '(' parameterList ')' subroutineBody
     private void compileSubroutineDec(){
+        this.ifCounter = 0;
+        this.whileCounter = 0;
         Tokenizer.KeyWord keyWord  = token.keyWord();
         symbolTable.resetVarArg();
         if (keyWord == Tokenizer.KeyWord.METHOD){
@@ -185,13 +188,13 @@ public class CompilationEngine {
         eat(";");
         vmWriter.writePop(VMWriter.KeyWord.TEMP,0);
     }
-    private String getLable(){
-        return "label" + labelCounter++;
+    private String getLabel(String name){
+        return name + ifCounter++;
     }
     //'while' '(' expression ')' '{' statements '}'
     private void compileWhile() {
-        String loopStart = getLable();
-        String loopEnd = getLable();
+        String loopStart = "WHILE_EXP" + whileCounter;
+        String loopEnd = "WHILE_END" + whileCounter++;
         vmWriter.writeLabel(loopStart);
         eat("while");
         eat("(");
@@ -208,27 +211,32 @@ public class CompilationEngine {
 
     //'if' '(' expression ')' '{' statements '}'('else' '{'statements '}')?
     private void compileIf() {
-
-        String endLabel = getLable();
-        String elseLabel = getLable();
+        boolean hasElse;
+        String ifTrue = "IF_TRUE" + ifCounter;
+        String ifEnd = "IF_END" + ifCounter;
+        String ifFalse = "IF_FALSE" + ifCounter++;
         eat("if");
         eat("(");
         compileExpression();
-        vmWriter.writeArithmetic("not");
-        vmWriter.writeIf(elseLabel);
+        vmWriter.writeIf(ifTrue);
+        vmWriter.writeGoto(ifFalse);
+        vmWriter.writeLabel(ifTrue);
         eat(")");
         eat("{");
         compileStatements();
         eat("}");
-        vmWriter.writeGoto(endLabel);
-        vmWriter.writeLabel(elseLabel);
-        if(token.keyWord() == Tokenizer.KeyWord.ELSE) {
+        hasElse = (token.keyWord() == Tokenizer.KeyWord.ELSE);
+        if(hasElse)
+            vmWriter.writeGoto(ifEnd);
+        vmWriter.writeLabel(ifFalse);
+        if(hasElse) {
             eat("else");
             eat("{");
             compileStatements();
             eat("}");
         }
-        vmWriter.writeLabel(endLabel);
+        if(hasElse)
+            vmWriter.writeLabel(ifEnd);
     }
 
     //'let' varName ('[' expression ']')? '=' expression ';'
@@ -239,8 +247,8 @@ public class CompilationEngine {
         if(token.type == Token.TokenType.SYMBOL && token.symbol() == '['){
             eat("[");
             //pushing base array address
-            vmWriter.writePush(kindToSegment.get(symbolTable.KindOf(name)),symbolTable.IndexOf(name));
             compileExpression();
+            vmWriter.writePush(kindToSegment.get(symbolTable.KindOf(name)),symbolTable.IndexOf(name));
             vmWriter.writeArithmetic("add");
             eat("]");
             array = true;
@@ -250,9 +258,9 @@ public class CompilationEngine {
         eat(";");
         if (array){
             //arr[i] = expression
-            vmWriter.writePop(VMWriter.KeyWord.TEMP,1);
+            vmWriter.writePop(VMWriter.KeyWord.TEMP,0);
             vmWriter.writePop(VMWriter.KeyWord.POINTER,1);
-            vmWriter.writePush(VMWriter.KeyWord.TEMP,1);
+            vmWriter.writePush(VMWriter.KeyWord.TEMP,0);
             vmWriter.writePop(VMWriter.KeyWord.THAT,0);
         }else {
             //var = expression
@@ -288,8 +296,8 @@ public class CompilationEngine {
                     vmWriter.writePush(VMWriter.KeyWord.CONST,0);
                     break;
                 case TRUE:
-                    vmWriter.writePush(VMWriter.KeyWord.CONST,1);
-                    vmWriter.writeArithmetic("neg");
+                    vmWriter.writePush(VMWriter.KeyWord.CONST,0);
+                    vmWriter.writeArithmetic("not");
                     break;
                 case THIS:
                     vmWriter.writePush(VMWriter.KeyWord.POINTER,0);
@@ -302,9 +310,9 @@ public class CompilationEngine {
                 //varName '[' expression ']'
                 String varName = getTokenString();
                 //pushing base array address
-                vmWriter.writePush(kindToSegment.get(symbolTable.KindOf(varName)),symbolTable.IndexOf(varName));
                 eat("[");
                 compileExpression();
+                vmWriter.writePush(kindToSegment.get(symbolTable.KindOf(varName)),symbolTable.IndexOf(varName));
                 eat("]");
                 //push arr[i]
                 vmWriter.writeArithmetic("add");
@@ -474,30 +482,7 @@ public class CompilationEngine {
         }
     }
 
-    public static void main(String[] args) {
-        try {
-            // write your code here
-            File[] files;
-            File in = new File(args[0]);
-            if(in.isDirectory()){
-                files = in.listFiles();
-            } else {
-                files = new File[1];
-                files[0] = in;
-            }
 
-            for(File file : files){
-                if(file.getName().endsWith(".jack")){
-                    File out = new File(file.getAbsolutePath().replace(".jack",".vm"));
-                    CompilationEngine compilationEngine = new CompilationEngine(file,out);
-                    compilationEngine.compileClass();
-                }
-            }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
 
 
 }

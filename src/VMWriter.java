@@ -1,10 +1,10 @@
-import java.io.File;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by daniel on 01/06/16.
+ * Created by daniel & ari on 26/05/16.
+ *             304953243 201524089
  */
 public class VMWriter {
     PrintWriter writer;
@@ -66,7 +66,7 @@ public class VMWriter {
     }
 
     private void write(String command,String type, String index){
-        writer.println(command +" " + type + " " + index);
+        writer.println((command +" " + type + " " + index).trim());
         writer.flush();
     }
 

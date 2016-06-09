@@ -1,5 +1,6 @@
 /**
- * Created by daniel on 01/06/16.
+ * Created by daniel & ari on 26/05/16.
+ *             304953243 201524089
  */
 public class VariableProperty {
 
@@ -9,7 +10,7 @@ public class VariableProperty {
     private SymbolTable.Scope scope;
     private int index;
 
-    public VariableProperty(){}
+
     public VariableProperty(String name, String type, SymbolTable.Kind kind, SymbolTable.Scope scope) {
         this.name = name;
         this.type = type;
